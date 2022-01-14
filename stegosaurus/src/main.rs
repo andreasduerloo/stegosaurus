@@ -50,17 +50,13 @@ fn main() {
     let mut mode: Mode = Mode::Help;
 
     if args.len() == 1 {
-        println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
-        print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile");
-        return;
+        *&mut mode = Mode::Help;
     } else if args[1] == "-d" || args[1] == "--decode" {
         *&mut mode = Mode::Decode;
     } else if args[1] == "-e" || args[1] == "--encode" {
         *&mut mode = Mode::Encode;
     } else {
-        println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
-        print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile destinationfile");
-        return;
+        *&mut mode = Mode::Help;
     }
 
     match mode {
@@ -127,8 +123,8 @@ fn main() {
 
         },
         Mode::Help => {
-            println!("Incorrect number of arguments. Usage: stegosaurus -e/--encode imagefile textfile destinationfile");
-            return;
+            println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
+            print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile destinationfile");
         }
     }
 }
