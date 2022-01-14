@@ -77,10 +77,6 @@ fn main() {
             let text_path = &args[3];
             let output_path = &args[4];
 
-            // let image_path = "C:/users/andre/Desktop/ciske.bmp";
-            // let text_path = "C:/users/andre/Desktop/input_text.txt";
-            // let output_path = "C:/users/andre/Desktop/outimage.bmp";
-
             // Image input
             let f = fs::File::open(image_path).expect("Could not read bitmap file");
             let mut reader = io::BufReader::new(f);
