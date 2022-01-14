@@ -44,6 +44,52 @@ fn encode_string(image: &mut Vec<u8>, text: &Vec<u8>, start_position: &u64) -> u
     out_index + 1
 }
 
+fn decode_string(image: &Vec<u8>, start_position: &u64) -> Vec<char> {
+    let mut output_vec: Vec<char> = Vec::new();
+
+    let mut power: u64 = 7;
+    let mut current_char: u8 = 0;
+    let mut counter: u8 = 0;
+    
+    for index in (*start_position as usize)..image.len() {
+        if counter == 8 {
+            let value: u8 = (image[index] & 1) << power;
+            *&mut current_char |= value;
+
+            let _ = &mut output_vec.push(current_char as char);
+            *&mut counter = 0;
+            *&mut power = 7;
+            *&mut current_char = 0;
+        }
+
+        // Get the LSB's value
+        let value: u8 = (image[index] & 1) << power;
+        *&mut current_char |= value;
+
+        *&mut counter += 1;
+        if power != 0 {
+            *&mut power -= 1;
+        }
+
+        // Check if the file contains the start flag
+        if output_vec.len() == 7 {
+            if output_vec[0..7] != ['`','S','T','A','R','T','`'] {
+                panic!("This image does not contain a hidden message.");
+            }
+        }
+
+        // Check if we've hit the end flag
+        if output_vec.len() >= 12 {
+            if output_vec[(output_vec.len() - 5)..(output_vec.len())] == ['`','E','N','D','`'] {
+                return output_vec;
+            } else {
+                continue;
+            }
+        }
+    }
+    return output_vec;
+}
+
 fn main() {
 
     let args: Vec<String> = env::args().collect();
@@ -61,7 +107,35 @@ fn main() {
 
     match mode {
         Mode::Decode => {
-            //
+            if args.len() != 3 {
+                println!("Incorrect number of arguments. Usage: stegosaurus -d/--decode imagefile");
+                return;
+            }
+
+            let image_path = &args[2];
+
+            // Image input
+            let f = fs::File::open(image_path).expect("Could not read bitmap file");
+            let mut reader = io::BufReader::new(f);
+            let mut buffer: Vec<u8> = Vec::new();
+
+            // Read file into vector
+            reader.read_to_end(&mut buffer).unwrap();
+
+            // Check if the file is a bitmap image
+            if buffer[0..2] != [0x42, 0x4d] {
+                println!("Error, the input file is not a bitmap.");
+                return;
+            }
+
+            // Find the start of the pixel array
+            let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
+
+            let message: Vec<char> = decode_string(&buffer, &start_address);
+
+            for index in 7..(message.len()-5) {
+                print!("{}", message[index]);
+            }
         },
         Mode::Encode => {
             if args.len() != 5 {
@@ -86,7 +160,6 @@ fn main() {
                 println!("Error, the input file is not a bitmap.");
                 return;
             }
-
 
             // Find the start of the pixel array
             let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
