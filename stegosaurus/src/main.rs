@@ -23,21 +23,19 @@ fn decode_bytes(slice: &[u8]) -> u64 {
 fn encode_string(image: &mut Vec<u8>, text: &Vec<u8>, start_position: &u64) -> u64 {
     let mut out_index: u64 = *start_position;
 
-    let mut power: u64 = 0;
-
     for index in (*start_position as usize)..(*start_position as usize + text.len()*8) {
+        let bitposition: usize = (index - *start_position as usize) % 8;
         let string_index = (index - *start_position as usize) / 8;
         // Build bitmask
-        let bitmask: u8 = 2_u8.pow((7 - &power % 8).try_into().unwrap());
+        let bitmask: u8 = 2_u8.pow((7 - bitposition).try_into().unwrap());
         // Find value
-        let value = ( text[string_index] & bitmask ) >> (7 - &power % 8);
+        let value = ( text[string_index] & bitmask ) >> (7 - bitposition);
         // Unset LSB
         *&mut image[index] &= 0xfe;
         // Set LSB to value
         *&mut image[index] |= value;
 
         // Increment
-        *&mut power += 1;
         *&mut out_index = index.try_into().unwrap();
     }
 
