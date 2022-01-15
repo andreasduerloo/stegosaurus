@@ -47,30 +47,19 @@ fn encode_string(image: &mut Vec<u8>, text: &Vec<u8>, start_position: &u64) -> u
 fn decode_string(image: &Vec<u8>, start_position: &u64) -> Vec<char> {
     let mut output_vec: Vec<char> = Vec::new();
 
-    let mut power: u64 = 7;
     let mut current_char: u8 = 0;
-    let mut counter: u8 = 0;
     
     for index in (*start_position as usize)..image.len() {
-        if counter == 8 {
-            let value: u8 = (image[index] & 1) << power;
-            *&mut current_char |= value;
+        let bitposition: usize = (index - *start_position as usize) % 8;
 
-            let _ = &mut output_vec.push(current_char as char);
-            *&mut counter = 0;
-            *&mut power = 7;
-            *&mut current_char = 0;
-        }
-
-        // Get the LSB's value
-        let value: u8 = (image[index] & 1) << power;
+        let value: u8 = (image[index] & 1) << 7 - bitposition;
         *&mut current_char |= value;
 
-        *&mut counter += 1;
-        if power != 0 {
-            *&mut power -= 1;
+        if bitposition == 7 {
+            let _ = &mut output_vec.push(current_char as char);
+            *&mut current_char = 0;
         }
-
+    
         // Check if the file contains the start flag
         if output_vec.len() == 7 {
             if output_vec[0..7] != ['`','S','T','A','R','T','`'] {
