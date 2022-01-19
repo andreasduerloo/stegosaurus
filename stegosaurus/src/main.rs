@@ -68,8 +68,6 @@ fn decode_string(image: &Vec<u8>, start_position: &u64) -> Vec<char> {
         if output_vec.len() >= 12 {
             if output_vec[(output_vec.len() - 5)..(output_vec.len())] == ['`','E','N','D','`'] {
                 return output_vec;
-            } else {
-                continue;
             }
         }
     }
