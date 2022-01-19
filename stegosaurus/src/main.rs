@@ -92,99 +92,97 @@ fn main() {
         *&mut mode = Mode::Help;
     }
 
-    match mode {
-        Mode::Decode => {
-            if args.len() != 3 {
-                println!("Incorrect number of arguments. Usage: stegosaurus -d/--decode imagefile");
-                return;
-            }
-
-            let image_path = &args[2];
-
-            // Image input
-            let f = fs::File::open(image_path).expect("Could not read bitmap file");
-            let mut reader = io::BufReader::new(f);
-            let mut buffer: Vec<u8> = Vec::new();
-
-            // Read file into vector
-            reader.read_to_end(&mut buffer).unwrap();
-
-            // Check if the file is a bitmap image
-            if buffer[0..2] != [0x42, 0x4d] {
-                println!("Error, the input file is not a bitmap.");
-                return;
-            }
-
-            // Find the start of the pixel array
-            let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
-
-            let message: Vec<char> = decode_string(&buffer, &start_address);
-
-            for index in 7..(message.len()-5) {
-                print!("{}", message[index]);
-            }
-        },
-        Mode::Encode => {
-            if args.len() != 5 {
-                println!("Incorrect number of arguments. Usage: stegosaurus -e/--encode imagefile textfile destinationfile");
-                return;
-            }
-
-            let image_path = &args[2];
-            let text_path = &args[3];
-            let output_path = &args[4];
-
-            // Image input
-            let f = fs::File::open(image_path).expect("Could not read bitmap file");
-            let mut reader = io::BufReader::new(f);
-            let mut buffer: Vec<u8> = Vec::new();
-
-            // Read file into vector
-            reader.read_to_end(&mut buffer).unwrap();
-
-            // Check if the file is a bitmap image
-            if buffer[0..2] != [0x42, 0x4d] {
-                println!("Error, the input file is not a bitmap.");
-                return;
-            }
-
-            // Find the start of the pixel array
-            let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
-
-            // Print some info about the file. TO DO: make this a verbose flag
-            // println!("File length in bytes: {}", decode_bytes(&buffer[2..6]));
-            // println!("Image width in pixels: {}", decode_bytes(&buffer[0x12..0x16]));
-            // println!("Image height in pixels: {}", decode_bytes(&buffer[0x16..0x1a]));
-
-            // Text input
-            let s = fs::read_to_string(text_path).expect("Could not read text file");
-            let char_vec: Vec<u8> = s.bytes().collect();
-
-            // println!("Input text is {} bytes", char_vec.len());
-
-            let mut address: u64 = start_address;
-
-            let start_flag = "`START`";
-            let start_vec: Vec<u8> = start_flag.bytes().collect();
-
-            let end_flag = "`END`";
-            let end_vec: Vec<u8> = end_flag.bytes().collect();
-
-            // Begin by putting in the start flag
-            *&mut address = encode_string(&mut buffer, &start_vec, &address);
-
-            // Now write the message
-            *&mut address = encode_string(&mut buffer, &char_vec, &address);
-
-            // Add the end flag
-            let _ = encode_string(&mut buffer, &end_vec, &address);
-
-            fs::write(output_path, buffer).unwrap();
-
-        },
-        Mode::Help => {
-            println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
-            print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile destinationfile");
+    if let Mode::Decode = mode {
+        if args.len() != 3 {
+            println!("Incorrect number of arguments. Usage: stegosaurus -d/--decode imagefile");
+            return;
         }
+        let image_path = &args[2];
+
+        // Image input
+        let f = fs::File::open(image_path).expect("Could not read bitmap file");
+        let mut reader = io::BufReader::new(f);
+        let mut buffer: Vec<u8> = Vec::new();
+
+        // Read file into vector
+        reader.read_to_end(&mut buffer).unwrap();
+
+        // Check if the file is a bitmap image
+        if buffer[0..2] != [0x42, 0x4d] {
+            println!("Error, the input file is not a bitmap.");
+            return;
+        }
+
+        // Find the start of the pixel array
+        let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
+
+        let message: Vec<char> = decode_string(&buffer, &start_address);
+
+        for index in 7..(message.len()-5) {
+            print!("{}", message[index]);
+        }
+    }
+
+    if let Mode::Encode = mode {
+        if args.len() != 5 {
+            println!("Incorrect number of arguments. Usage: stegosaurus -e/--encode imagefile textfile destinationfile");
+            return;
+        }
+
+        let image_path = &args[2];
+        let text_path = &args[3];
+        let output_path = &args[4];
+
+        // Image input
+        let f = fs::File::open(image_path).expect("Could not read bitmap file");
+        let mut reader = io::BufReader::new(f);
+        let mut buffer: Vec<u8> = Vec::new();
+
+        // Read file into vector
+        reader.read_to_end(&mut buffer).unwrap();
+
+        // Check if the file is a bitmap image
+        if buffer[0..2] != [0x42, 0x4d] {
+            println!("Error, the input file is not a bitmap.");
+            return;
+        }
+
+        // Find the start of the pixel array
+        let start_address: u64 = decode_bytes(&buffer[0x0a..0x0e]);
+
+        // Print some info about the file. TO DO: make this a verbose flag
+        // println!("File length in bytes: {}", decode_bytes(&buffer[2..6]));
+        // println!("Image width in pixels: {}", decode_bytes(&buffer[0x12..0x16]));
+        // println!("Image height in pixels: {}", decode_bytes(&buffer[0x16..0x1a]));
+
+        // Text input
+        let s = fs::read_to_string(text_path).expect("Could not read text file");
+        let char_vec: Vec<u8> = s.bytes().collect();
+
+        // println!("Input text is {} bytes", char_vec.len());
+
+        let mut address: u64 = start_address;
+
+        let start_flag = "`START`";
+        let start_vec: Vec<u8> = start_flag.bytes().collect();
+
+        let end_flag = "`END`";
+        let end_vec: Vec<u8> = end_flag.bytes().collect();
+
+        // Begin by putting in the start flag
+        *&mut address = encode_string(&mut buffer, &start_vec, &address);
+
+        // Now write the message
+        *&mut address = encode_string(&mut buffer, &char_vec, &address);
+
+        // Add the end flag
+        let _ = encode_string(&mut buffer, &end_vec, &address);
+
+        fs::write(output_path, buffer).unwrap();
+    }
+
+    if let Mode::Help = mode {
+        println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
+        print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile destinationfile");
     }
 }
