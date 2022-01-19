@@ -26,13 +26,11 @@ fn encode_string(image: &mut Vec<u8>, text: &Vec<u8>, start_position: &u64) -> u
         let bitposition: usize = (index - *start_position as usize) % 8;
         let string_index = (index - *start_position as usize) / 8;
         // Build bitmask
-        let bitmask: u8 = 2_u8.pow((7 - bitposition).try_into().unwrap());
+        let bitmask: u8 = 1 << (7 - bitposition);
         // Find value
         let value = ( text[string_index] & bitmask ) >> (7 - bitposition);
-        // Unset LSB
-        *&mut image[index] &= 0xfe;
-        // Set LSB to value
-        *&mut image[index] |= value;
+        // Unset LSB and set it to the value
+        *&mut image[index] = ( *&image[index] & 0xfe ) | value;
 
         // Increment
         *&mut out_index = index.try_into().unwrap();
