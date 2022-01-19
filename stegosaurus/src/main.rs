@@ -6,7 +6,6 @@ use std::env;
 enum Mode {
     Decode,
     Encode,
-    Help,
 }
 
 fn decode_bytes(slice: &[u8]) -> u64 {
@@ -80,19 +79,17 @@ fn decode_string(image: &Vec<u8>, start_position: &u64) -> Vec<char> {
 fn main() {
 
     let args: Vec<String> = env::args().collect();
-    let mut mode: Mode = Mode::Help;
+    let mut mode: Option<Mode> = None;
 
-    if args.len() == 1 {
-        *&mut mode = Mode::Help;
-    } else if args[1] == "-d" || args[1] == "--decode" {
-        *&mut mode = Mode::Decode;
-    } else if args[1] == "-e" || args[1] == "--encode" {
-        *&mut mode = Mode::Encode;
-    } else {
-        *&mut mode = Mode::Help;
+    if args.len() > 1 {
+        if args[1] == "-d" || args[1] == "--decode" {
+            *&mut mode = Some(Mode::Decode);
+        } else if args[1] == "-e" || args[1] == "--encode" {
+            *&mut mode = Some(Mode::Encode);
+        }
     }
 
-    if let Mode::Decode = mode {
+    if let Some(Mode::Decode) = mode {
         if args.len() != 3 {
             println!("Incorrect number of arguments. Usage: stegosaurus -d/--decode imagefile");
             return;
@@ -123,7 +120,7 @@ fn main() {
         }
     }
 
-    if let Mode::Encode = mode {
+    if let Some(Mode::Encode) = mode {
         if args.len() != 5 {
             println!("Incorrect number of arguments. Usage: stegosaurus -e/--encode imagefile textfile destinationfile");
             return;
@@ -181,7 +178,7 @@ fn main() {
         fs::write(output_path, buffer).unwrap();
     }
 
-    if let Mode::Help = mode {
+    if let None = mode {
         println!("Stegosaurus - steganography tool to write text to/read text from bitmap images.");
         print!("Usage:\nDecode: stegosaurus -d/--decode imagefile\nEncode: stegosaurus -e/--encode imagefile textfile destinationfile");
     }
