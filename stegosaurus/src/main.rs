@@ -75,14 +75,14 @@ fn main() {
     if args.len() > 1 {
         if args[1] == "-d" || args[1] == "--decode" {
             if args.len() == 3 {
-                *&mut mode = Some(Mode::Decode(args[2].clone()));
+                *&mut mode = Some(Mode::Decode(args[2].to_owned()));
             } else {
                 println!("Incorrect number of arguments. Usage: stegosaurus -d/--decode imagefile");
                 return;
             }
         } else if args[1] == "-e" || args[1] == "--encode" {
             if args.len() == 5 {
-                *&mut mode = Some(Mode::Encode(args[2].clone(), args[3].clone(), args[4].clone()));
+                *&mut mode = Some(Mode::Encode(args[2].to_owned(), args[3].to_owned(), args[4].to_owned()));
             } else {
                 println!("Incorrect number of arguments. Usage: stegosaurus -e/--encode imagefile textfile destinationfile");
                 return;
