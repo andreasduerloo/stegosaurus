@@ -1,6 +1,6 @@
 # stegosaurus
 
-Stegosaurus is a steganography tool written in Rust. It allows hiding plaintext messages in .bmp files, as well as decoding those messages from .bmp files.
+Stegosaurus is a steganography tool written in Rust. It allows hiding ASCII plaintext messages in .bmp files, as well as decoding those messages from .bmp files.
 
 Usage:
 
